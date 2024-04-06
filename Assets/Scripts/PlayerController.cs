@@ -11,7 +11,7 @@ public class PlayerController : MonoBehaviour
     private Vector2 moveVector;
 
     private float p_speed = 15f;
-    private float p_jumpHeight = 10f;
+    private float p_jumpHeight = 22f;
     private bool p_canJump = false;
     private bool p_isJumping = false;
 
@@ -23,21 +23,55 @@ public class PlayerController : MonoBehaviour
     private void OnEnable()
     {
         input.Enable();
-        input.Player.Movement.performed += onMovementKeyPressed;
-        input.Player.Movement.canceled += onMovementKeyLifted;
-    }
-    private void FixedUpdate()
-    {
-        p_rb2D.velocity = moveVector * p_speed;
-        Debug.Log(p_rb2D.velocity.ToString());
+        input.Player.Movement.performed += MovementPerformed;
+        input.Player.Jump.performed += Jumping;
+        input.Player.Jump.performed += JumpingCancelled;
+        input.Player.Movement.canceled += MovementCancelled;
     }
 
-    private void onMovementKeyPressed(InputAction.CallbackContext value)
+    private void Update()
+    {
+        //if (Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    Debug.Log("jumped");
+        //    p_rb2D.AddForce(Vector2.up * p_jumpHeight);
+        //    p_isJumping = true;
+        //}
+    }
+
+    private void FixedUpdate()
+    {
+        Vector2 movement = new Vector2(moveVector.x * p_speed, p_rb2D.velocity.y);
+
+        //movement.y = p_rb2D.velocity.y;
+   
+        p_rb2D.velocity = movement;
+    
+        //Debug.Log(p_rb2D.velocity.ToString());
+    
+    }
+
+
+
+    private void MovementPerformed(InputAction.CallbackContext value)
     {
         moveVector.x = value.ReadValue<float>();
     }
 
-    private void onMovementKeyLifted(InputAction.CallbackContext value)
+    private void Jumping(InputAction.CallbackContext context)
+    {
+        Debug.Log("jump pressed");
+        //p_rb2D.AddForce(Vector2.up * p_jumpHeight);
+        p_rb2D.velocity = Vector2.up * p_jumpHeight;
+        
+    }
+
+    private void JumpingCancelled(InputAction.CallbackContext context) 
+    {
+        moveVector.y = p_rb2D.velocity.y;
+    }
+
+    private void MovementCancelled(InputAction.CallbackContext value)
     {
         moveVector.x = 0.0f;
     }
@@ -45,8 +79,11 @@ public class PlayerController : MonoBehaviour
     private void OnDisable()
     {
         input.Disable();
-        input.Player.Movement.performed -= onMovementKeyPressed;
-        input.Player.Movement.performed -= onMovementKeyLifted;
+        input.Player.Movement.performed -= MovementPerformed;
+        input.Player.Jump.performed -= Jumping;
+        input.Player.Jump.performed -= JumpingCancelled;
+        input.Player.Movement.canceled -= MovementCancelled;
+
     }
 
 }
